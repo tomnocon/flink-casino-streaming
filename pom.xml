@@ -18,7 +18,9 @@
         <scala.version>2.11.12</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
         <flink.version>1.6.1</flink.version>
+        <kafka.version>0.11</kafka.version>
         <influxdb.vesrion>2.14</influxdb.vesrion>
+        <jackson.vesrion>2.9.7</jackson.vesrion>
         <encoding>UTF-8</encoding>
         <scala-maven-plugin.version>3.3.1</scala-maven-plugin.version>
     </properties>
@@ -28,26 +30,6 @@
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
             <version>${scala.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-core</artifactId>
-            <version>${flink.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-clients_${scala.binary.version}</artifactId>
-            <version>${flink.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-streaming-scala_${scala.binary.version}</artifactId>
-            <version>${flink.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.influxdb</groupId>
-            <artifactId>influxdb-java</artifactId>
-            <version>${influxdb.vesrion}</version>
         </dependency>
     </dependencies>
 
