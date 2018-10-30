@@ -8,9 +8,9 @@ import org.apache.flink.configuration.Configuration
 import org.influxdb.dto.Point
 import org.influxdb.{InfluxDB, InfluxDBFactory}
 
-import scala.math.ScalaNumber
+import scala.collection.JavaConverters.mapAsJavaMapConverter
 
-class InfluxDbSink[T <: ScalaNumber](val measurement: String) extends RichSinkFunction[Any] {
+class InfluxDbSink extends RichSinkFunction[InfluxDbPoint] {
 
   @transient
   private var influxDB: InfluxDB = _
@@ -31,8 +31,11 @@ class InfluxDbSink[T <: ScalaNumber](val measurement: String) extends RichSinkFu
     influxDB.close()
   }
 
-  override def invoke(dataPoint: Any): Unit = {
-    val point: Point = Point.measurement(measurement)
+  override def invoke(dataPoint: InfluxDbPoint): Unit = {
+    val point: Point = Point.measurement(dataPoint.measurement)
+      .fields(dataPoint.fields.asJava)
+      .tag(dataPoint.tags.asJava)
+      .time(dataPoint.timestamp, TimeUnit.MILLISECONDS)
       .build()
 
     influxDB.write(databaseName, "autogen", point)

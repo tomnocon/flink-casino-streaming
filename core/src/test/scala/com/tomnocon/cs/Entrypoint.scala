@@ -22,7 +22,7 @@ object Entrypoint {
     val producer = new KafkaProducer[String, MachineEvent](props, new StringSerializer, new MachineEventSerializer)
 
     def machineListener(event: MachineEvent): Unit = {
-      producer.send(new ProducerRecord[String, MachineEvent]("topic", event), new Callback {
+      producer.send(new ProducerRecord[String, MachineEvent]("topic", null, event.timestamp, null, event), new Callback {
         override def onCompletion(metadata: RecordMetadata, exception: Exception): Unit = {
           System.out.println("Sent message: " + event.toString)
           if (exception != null) {

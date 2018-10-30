@@ -10,7 +10,7 @@ services:
     ports:
     - "8086:8086"
     environment:
-    - INFLUXDB_DB=sensors
+    - INFLUXDB_DB=casino
     - INFLUXDB_USER=admin
     - INFLUXDB_USER_PASSWORD=admin
     networks:
