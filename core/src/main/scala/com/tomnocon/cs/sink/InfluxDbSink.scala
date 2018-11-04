@@ -3,8 +3,8 @@ package com.tomnocon.cs.sink
 import java.util.concurrent.TimeUnit
 
 import org.apache.flink.api.java.utils.ParameterTool
-import org.apache.flink.streaming.api.functions.sink.RichSinkFunction
 import org.apache.flink.configuration.Configuration
+import org.apache.flink.streaming.api.functions.sink.RichSinkFunction
 import org.influxdb.dto.Point
 import org.influxdb.{InfluxDB, InfluxDBFactory}
 

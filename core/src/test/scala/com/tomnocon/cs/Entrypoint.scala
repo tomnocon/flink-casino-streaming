@@ -1,14 +1,14 @@
 package com.tomnocon.cs
 
 import java.util.Properties
+import java.util.concurrent.{Executors, TimeUnit}
 
 import com.tomnocon.cs.model.MachineEvent
 import org.apache.kafka.clients.producer.{Callback, KafkaProducer, ProducerRecord, RecordMetadata}
 import org.apache.kafka.common.serialization.StringSerializer
-import java.util.concurrent.{Executors, TimeUnit}
 
-import scala.concurrent.{Await, ExecutionContext, ExecutionContextExecutor, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContext, ExecutionContextExecutor, Future}
 import scala.util.Random
 
 object Entrypoint {
