@@ -3,9 +3,10 @@ package com.tomnocon.cs
 import java.util.Properties
 
 import com.tomnocon.cs.model.Helpers._
-import com.tomnocon.cs.model.{MachineEvent, MachineEventDeserializer, MachineEventType, MachineProfit}
+import com.tomnocon.cs.model._
 import com.tomnocon.cs.sink.{InfluxDbPoint, InfluxDbSink}
 import org.apache.flink.api.java.utils.ParameterTool
+import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.windowing.time.Time
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer011
@@ -18,44 +19,57 @@ object Main {
 
     val parameters = ParameterTool.fromArgs(args)
     val env = StreamExecutionEnvironment.getExecutionEnvironment
+    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     env.getConfig.setGlobalJobParameters(parameters)
     env.enableCheckpointing(1000)
     env.setParallelism(1)
 
+    val kafkaConsumer = new FlinkKafkaConsumer011("topic", new MachineEventDeserializer, kafkaProps)
+    kafkaConsumer.setStartFromEarliest()
+    kafkaConsumer.assignTimestampsAndWatermarks(new MachineEventWatermarkEmitter)
+
     val source = env
-      .addSource(new FlinkKafkaConsumer011("topic", new MachineEventDeserializer, kafkaProps))
+      .addSource(kafkaConsumer)
 
-    // Map to machine profit
-    val machineProfitSource = source
+    // Map to machine income
+    val machineIncomeSource = source
       .filter(machineEvent => Array(MachineEventType.Win, MachineEventType.Bet).contains(machineEvent.`type`))
-      .map[MachineProfit]((machineEvent: MachineEvent) => machineEvent.toMachineProfit)
+      .map[MachineIncome]((machineEvent: MachineEvent) => machineEvent.toMachineIncome)
 
-    // Game profit pipeline
-    machineProfitSource
+    // Game income pipeline
+    machineIncomeSource
       .keyBy(_.gameId)
       .timeWindow(Time.seconds(30))
       .reduce { (p1, p2) => p1.sum(p2) }
-      .map[InfluxDbPoint]((machineProfit: MachineProfit) => machineProfit.toInfluxDbPoint("game_profit"))
+      .map[InfluxDbPoint]((machineProfit: MachineIncome) => machineProfit.toInfluxDbPoint("game_income"))
       .addSink(new InfluxDbSink)
-      .name("Game Profit")
+      .name("Game Income")
 
-    // Site profit pipeline
-    machineProfitSource
+    // Site income pipelines
+    val siteIncomeSource = machineIncomeSource
       .keyBy(_.siteId)
       .timeWindow(Time.seconds(30))
-      .reduce { (p1, p2) => p1.sum(p2) }
-      .map[InfluxDbPoint]((machineProfit: MachineProfit) => machineProfit.toInfluxDbPoint("site_profit"))
-      .addSink(new InfluxDbSink)
-      .name("Site Profit")
 
-    // Machine profit pipeline
-    machineProfitSource
+    siteIncomeSource
+      .maxBy("value")
+      .map[InfluxDbPoint]((machineProfit: MachineIncome) => machineProfit.toInfluxDbPoint("site_max_income"))
+      .addSink(new InfluxDbSink)
+      .name("Site Max Income")
+
+    siteIncomeSource
+      .reduce { (p1, p2) => p1.sum(p2) }
+      .map[InfluxDbPoint]((machineProfit: MachineIncome) => machineProfit.toInfluxDbPoint("site_income"))
+      .addSink(new InfluxDbSink)
+      .name("Site Income")
+
+    // Machine income pipeline
+    machineIncomeSource
       .keyBy(_.machineId)
       .timeWindow(Time.seconds(30))
       .reduce { (p1, p2) => p1.sum(p2) }
-      .map[InfluxDbPoint]((machineProfit: MachineProfit) => machineProfit.toInfluxDbPoint("machine_profit"))
+      .map[InfluxDbPoint]((machineProfit: MachineIncome) => machineProfit.toInfluxDbPoint("machine_income"))
       .addSink(new InfluxDbSink)
-      .name("Machine Profit")
+      .name("Machine Income")
 
 
     //gameProfit

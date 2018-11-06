@@ -75,7 +75,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "site_profit",
+          "measurement": "site_income",
           "orderByTime": "ASC",
           "policy": "default",
           "refId": "A",
@@ -199,7 +199,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "game_profit",
+          "measurement": "game_income",
           "orderByTime": "ASC",
           "policy": "default",
           "refId": "A",
@@ -302,7 +302,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "alias": "$tag_machineId",
+          "alias": "$tag_machineId [$tag_siteId]",
           "groupBy": [
             {
               "params": [
@@ -318,12 +318,18 @@
             },
             {
               "params": [
+                "siteId"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
                 "none"
               ],
               "type": "fill"
             }
           ],
-          "measurement": "machine_profit",
+          "measurement": "machine_income",
           "orderByTime": "ASC",
           "policy": "default",
           "refId": "A",
@@ -353,6 +359,126 @@
       "timeFrom": null,
       "timeShift": null,
       "title": "Machine income",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "casino",
+      "fill": 1,
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 9
+      },
+      "id": 12,
+      "legend": {
+        "avg": true,
+        "current": false,
+        "max": true,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "alias": "$tag_siteId",
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "siteId"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "none"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "site_max_income",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": []
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Site Max Income",
       "tooltip": {
         "shared": true,
         "sort": 0,

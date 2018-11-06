@@ -28,8 +28,8 @@ services:
   zookeeper:
     image: zookeeper:3.4
     container_name: zookeeper
-    expose:
-    - 2181
+    ports:
+    - '2181:2181'
     networks:
     - casino-streaming
   kafka:
@@ -40,30 +40,5 @@ services:
     environment:
     - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
     - KAFKA_ADVERTISED_HOST_NAME=127.0.0.1
-    networks:
-    - casino-streaming
-  jobmanager:
-    image: flink:1.6-alpine
-    container_name: jobmanager
-    ports:
-    - "8081:8081"
-    command: jobmanager
-    environment:
-    - JOB_MANAGER_RPC_ADDRESS=jobmanager
-    networks:
-    - casino-streaming
-  taskmanager:
-    image: flink:1.6-alpine
-    container_name: taskmanager
-    expose:
-    - "6121"
-    - "6122"
-    depends_on:
-    - jobmanager
-    command: taskmanager
-    links:
-    - "jobmanager:jobmanager"
-    environment:
-    - JOB_MANAGER_RPC_ADDRESS=jobmanager
     networks:
     - casino-streaming

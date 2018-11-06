@@ -3,29 +3,32 @@ package com.tomnocon.cs.model
 import com.tomnocon.cs.sink.InfluxDbPoint
 
 object Helpers {
-  implicit class RichMachineEvent(base: MachineEvent){
-    def toMachineProfit : MachineProfit = {
-      if (base.`type` == MachineEventType.Win) {
-        MachineProfit(
-          machineId = base.machineId,
-          siteId = base.siteId,
-          gameId = base.gameId,
-          value = -base.value,
-          timestamp = base.timestamp)
-      } else {
-        MachineProfit(
-          machineId = base.machineId,
-          siteId = base.siteId,
-          gameId = base.gameId,
-          value = base.value,
-          timestamp = base.timestamp)
+
+  implicit class RichMachineEvent(base: MachineEvent) {
+    def toMachineIncome: MachineIncome = {
+      base.`type` match {
+        case MachineEventType.Win =>
+          MachineIncome(
+            machineId = base.machineId,
+            siteId = base.siteId,
+            gameId = base.gameId,
+            value = -base.value,
+            timestamp = base.timestamp)
+        case MachineEventType.Bet =>
+          MachineIncome(
+            machineId = base.machineId,
+            siteId = base.siteId,
+            gameId = base.gameId,
+            value = base.value,
+            timestamp = base.timestamp)
+        case _ => throw new IllegalArgumentException(s"This is not machine income event: $base")
       }
     }
   }
 
-  implicit class RichMachineProfit(base: MachineProfit){
-    def sum(second: MachineProfit) : MachineProfit = {
-      MachineProfit(
+  implicit class RichMachineProfit(base: MachineIncome) {
+    def sum(second: MachineIncome): MachineIncome = {
+      MachineIncome(
         machineId = base.machineId,
         siteId = base.siteId,
         gameId = base.gameId,
@@ -33,7 +36,7 @@ object Helpers {
         timestamp = second.timestamp)
     }
 
-    def toInfluxDbPoint(measurement: String) : InfluxDbPoint = {
+    def toInfluxDbPoint(measurement: String): InfluxDbPoint = {
       InfluxDbPoint(
         measurement = measurement,
         timestamp = base.timestamp,
@@ -41,4 +44,5 @@ object Helpers {
         fields = Map("value" -> base.value.asInstanceOf[AnyRef]))
     }
   }
+
 }
