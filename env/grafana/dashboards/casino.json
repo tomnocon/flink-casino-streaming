@@ -91,6 +91,10 @@
               {
                 "params": [],
                 "type": "mean"
+              },
+              {
+                "params": [],
+                "type": "cumulative_sum"
               }
             ]
           ],
@@ -100,7 +104,7 @@
       "thresholds": [],
       "timeFrom": null,
       "timeShift": null,
-      "title": "Site profit",
+      "title": "Site income",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -139,7 +143,7 @@
     },
     {
       "aliasColors": {},
-      "bars": true,
+      "bars": false,
       "dashLength": 10,
       "dashes": false,
       "datasource": "casino",
@@ -150,17 +154,17 @@
         "x": 12,
         "y": 0
       },
-      "id": 4,
+      "id": 10,
       "legend": {
         "avg": false,
         "current": false,
         "max": false,
         "min": false,
-        "show": false,
+        "show": true,
         "total": false,
         "values": false
       },
-      "lines": false,
+      "lines": true,
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
@@ -211,6 +215,10 @@
               {
                 "params": [],
                 "type": "mean"
+              },
+              {
+                "params": [],
+                "type": "cumulative_sum"
               }
             ]
           ],
@@ -220,21 +228,19 @@
       "thresholds": [],
       "timeFrom": null,
       "timeShift": null,
-      "title": "Top games",
+      "title": "Game income",
       "tooltip": {
-        "shared": false,
+        "shared": true,
         "sort": 0,
         "value_type": "individual"
       },
       "type": "graph",
       "xaxis": {
         "buckets": null,
-        "mode": "series",
+        "mode": "time",
         "name": null,
         "show": true,
-        "values": [
-          "total"
-        ]
+        "values": []
       },
       "yaxes": [
         {
@@ -333,6 +339,10 @@
               {
                 "params": [],
                 "type": "mean"
+              },
+              {
+                "params": [],
+                "type": "cumulative_sum"
               }
             ]
           ],
@@ -342,7 +352,7 @@
       "thresholds": [],
       "timeFrom": null,
       "timeShift": null,
-      "title": "Machine profit",
+      "title": "Machine income",
       "tooltip": {
         "shared": true,
         "sort": 0,
