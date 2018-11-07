@@ -2,6 +2,7 @@ package com.tomnocon.cs
 
 import java.util.Properties
 
+import com.tomnocon.cs.function.DepositFraudDetectionFunction
 import com.tomnocon.cs.model.Helpers._
 import com.tomnocon.cs.model._
 import com.tomnocon.cs.sink.{InfluxDbPoint, InfluxDbSink}
@@ -10,6 +11,8 @@ import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.windowing.time.Time
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer011
+
+import scala.concurrent.duration._
 
 object Main {
   def main(args: Array[String]): Unit = {
@@ -71,6 +74,12 @@ object Main {
       .addSink(new InfluxDbSink)
       .name("Machine Income")
 
+    source
+      .filter(machineEvent => machineEvent.`type` == MachineEventType.Deposit)
+      .keyBy(_.machineId)
+      .countWindow(2, 1)
+      .process(new DepositFraudDetectionFunction(1.second))
+      .print()
 
     //gameProfit
     //.print()

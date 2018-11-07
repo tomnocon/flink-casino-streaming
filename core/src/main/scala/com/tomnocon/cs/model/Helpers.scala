@@ -24,6 +24,15 @@ object Helpers {
         case _ => throw new IllegalArgumentException(s"This is not machine income event: $base")
       }
     }
+
+    def toMachineFraudAlert(message: String, timestamp: Long): MachineFraudAlert = {
+      MachineFraudAlert(
+        message = message,
+        machineId = base.machineId,
+        siteId = base.siteId,
+        timestamp = timestamp
+      )
+    }
   }
 
   implicit class RichMachineProfit(base: MachineIncome) {
