@@ -22,9 +22,9 @@ object MachineFraudSimulation {
     val producer = new KafkaProducer[String, MachineEvent](props, new StringSerializer, new MachineEventSerializer)
 
     def machineListener(event: MachineEvent): Unit = {
-      producer.send(new ProducerRecord[String, MachineEvent]("topic", event), new Callback {
+      producer.send(new ProducerRecord[String, MachineEvent]("machine", event), new Callback {
         override def onCompletion(metadata: RecordMetadata, exception: Exception): Unit = {
-          System.out.println("Sent message: " + event.toString)
+          System.out.println(s"Sent message: $event")
           if (exception != null) {
             exception.printStackTrace()
           }

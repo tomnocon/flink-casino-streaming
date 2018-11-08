@@ -27,8 +27,7 @@ object Main {
     env.enableCheckpointing(1000)
     env.setParallelism(1)
 
-    val kafkaConsumer = new FlinkKafkaConsumer011("topic", new MachineEventDeserializer, kafkaProps)
-    kafkaConsumer.setStartFromEarliest()
+    val kafkaConsumer = new FlinkKafkaConsumer011("machine", new MachineEventDeserializer, kafkaProps)
     kafkaConsumer.assignTimestampsAndWatermarks(new MachineEventWatermarkEmitter)
 
     val source = env
@@ -74,18 +73,17 @@ object Main {
       .addSink(new InfluxDbSink)
       .name("Machine Income")
 
+    // Fraud detection pipeline
     source
       .filter(machineEvent => machineEvent.`type` == MachineEventType.Deposit)
       .keyBy(_.machineId)
       .countWindow(2, 1)
       .process(new DepositFraudDetectionFunction(1.second))
       .print()
+      .name("Fraud Detection")
 
-    //gameProfit
-    //.print()
-    //println(env.getExecutionPlan)
-    //sensorStream.print()
+    println(env.getExecutionPlan)
 
-    env.execute("Casino Streaming")
+    //env.execute("Casino Streaming")
   }
 }
