@@ -4,27 +4,32 @@ networks:
     name: casino-streaming
     driver: bridge
 services:
-  influxdb:
-    image: influxdb:1.6-alpine
-    container_name: influxdb
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.5.1
+    container_name: elasticsearch
     ports:
-    - "8086:8086"
+    - "9200:9200"
     environment:
-    - INFLUXDB_DB=casino
-    - INFLUXDB_USER=admin
-    - INFLUXDB_USER_PASSWORD=admin
+      ES_JAVA_OPTS: -Xms1g -Xmx1g
     networks:
     - casino-streaming
-  grafana:
-    image: grafana/grafana:5.3.1
-    container_name: grafana
+  kibana:
+    image: docker.elastic.co/kibana/kibana-oss:6.5.1
+    container_name: kibana
     ports:
-    - "3000:3000"
-    volumes:
-    - ./env/grafana/provisioning:/etc/grafana/provisioning
-    - ./env/grafana/dashboards:/var/lib/grafana/dashboards
+    - "5601:5601"
     networks:
     - casino-streaming
+  elasticsearch_dump:
+    image: taskrabbit/elasticsearch-dump:v4.1.2
+    container_name: elasticsearch_dump
+    networks:
+    - casino-streaming
+    volumes:
+    - ./env/elasticdump:/var/elasticdump
+    entrypoint:
+    - sh
+    - /var/elasticdump/dump.sh
   zookeeper:
     image: zookeeper:3.4
     container_name: zookeeper

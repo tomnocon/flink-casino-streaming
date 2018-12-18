@@ -33,34 +33,45 @@ object CasinoSimulation {
     }
 
     val machines = Array(
-      new MachineSimulator(machine = Machine.GD0001, site = Site.TheCalypso) {
+      new MachineSimulator(machine = Machine.M0001, site = Site.TheCalypso) {
         listen(machineListener)
       },
-      new MachineSimulator(machine = Machine.GD0002, site = Site.TheCalypso) {
+      new MachineSimulator(machine = Machine.M0002, site = Site.TheCalypso) {
         listen(machineListener)
       },
-      new MachineSimulator(machine = Machine.GD0003, site = Site.TheCalypso) {
+      new MachineSimulator(machine = Machine.M0003, site = Site.TheCalypso) {
         listen(machineListener)
       },
-      new MachineSimulator(machine = Machine.GD0004, site = Site.TheChariot) {
+      new MachineSimulator(machine = Machine.M0004, site = Site.TheChariot) {
         listen(machineListener)
       },
-      new MachineSimulator(machine = Machine.GD0005, site = Site.TheChariot) {
+      new MachineSimulator(machine = Machine.M0005, site = Site.TheChariot) {
         listen(machineListener)
       },
-      new MachineSimulator(machine = Machine.GD0006, site = Site.TheChariot) {
+      new MachineSimulator(machine = Machine.M0006, site = Site.TheChariot) {
         listen(machineListener)
       }
     )
 
     implicit val context: ExecutionContextExecutor = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(machines.length))
 
-    val tasks = for (i <- machines.indices) yield Future {
+    val tasks = for (i <- machines.dropRight(1).indices) yield Future {
       val gate = new Gate
       while (true) {
         gate.await(FiniteDuration.apply(random.nextInt(5) + 1, TimeUnit.SECONDS)) // wait around 5 sec in each step
         val machine = machines.apply(i)
-        action(machine) // perform some action on machine
+        randomAction(machine) // perform some action on machine
+      }
+    }
+
+    tasks :+ Future {
+      val gate = new Gate
+      while (true) {
+        val machine = machines.last
+        machine.deposit(1000) // fraud simulation - two quick deposits
+        gate.await(500.milli)
+        machine.deposit(1000)
+        gate.await(40.seconds)
       }
     }
 
@@ -68,7 +79,7 @@ object CasinoSimulation {
     Await.result(aggregated, Duration.Inf)
   }
 
-  def action(machine: MachineSimulator): Unit = {
+  def randomAction(machine: MachineSimulator): Unit = {
     if (machine.credit > 0) {
       val betAmount = machine.credit % (random.nextInt(97) + 1) // random bet [1,97]
       machine.bet(betAmount)

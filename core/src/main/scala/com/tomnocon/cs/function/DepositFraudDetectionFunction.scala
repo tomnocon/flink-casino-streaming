@@ -7,6 +7,7 @@ import com.tomnocon.cs.model.{MachineEvent, MachineFraudAlert}
 import org.apache.flink.streaming.api.scala.function.ProcessWindowFunction
 import org.apache.flink.streaming.api.windowing.windows.GlobalWindow
 import org.apache.flink.util.Collector
+import org.joda.time.DateTime
 
 import scala.concurrent.duration.{Duration, FiniteDuration}
 
@@ -18,7 +19,7 @@ class DepositFraudDetectionFunction(val minimumTimeDifference : Duration) extend
       for (pair <- elements.sliding(2)) {
         val difference = FiniteDuration.apply(Math.abs(pair.last.timestamp - pair.head.timestamp), TimeUnit.MILLISECONDS)
         if(difference < minimumTimeDifference){
-          out.collect(pair.last.toMachineFraudAlert(s"Minimum time difference between deposits has been exceeded. Difference: $difference", context.currentProcessingTime))
+          out.collect(pair.last.toMachineFraudAlert(s"Minimum time difference between deposits has been exceeded. Difference: $difference", new DateTime(context.currentProcessingTime)))
         }
       }
     }

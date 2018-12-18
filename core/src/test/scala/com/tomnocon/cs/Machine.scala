@@ -3,13 +3,13 @@ package com.tomnocon.cs
 object Machine extends Enumeration {
 
   type Machine = Value
-  val GD0001: Value = Value("GD0001")
-  val GD0002: Value = Value("GD0002")
-  val GD0003: Value = Value("GD0003")
-  val GD0004: Value = Value("GD0004")
-  val GD0005: Value = Value("GD0005")
-  val GD0006: Value = Value("GD0006")
-  val GD0007: Value = Value("GD0007")
-  val GD0008: Value = Value("GD0008")
+  val M0001: Value = Value("M0001")
+  val M0002: Value = Value("M0002")
+  val M0003: Value = Value("M0003")
+  val M0004: Value = Value("M0004")
+  val M0005: Value = Value("M0005")
+  val M0006: Value = Value("M0006")
+  val M0007: Value = Value("M0007")
+  val M0008: Value = Value("M0008")
 
 }

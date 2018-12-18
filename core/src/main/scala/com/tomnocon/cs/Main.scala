@@ -5,12 +5,14 @@ import java.util.Properties
 import com.tomnocon.cs.function.DepositFraudDetectionFunction
 import com.tomnocon.cs.model.Helpers._
 import com.tomnocon.cs.model._
-import com.tomnocon.cs.sink.{InfluxDbPoint, InfluxDbSink}
+import com.tomnocon.cs.sink.{CustomElasticsearchSinkFunction, ElasticsearchEvent}
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.windowing.time.Time
+import org.apache.flink.streaming.connectors.elasticsearch6.ElasticsearchSink
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer011
+import org.apache.http.HttpHost
 
 import scala.concurrent.duration._
 
@@ -30,47 +32,20 @@ object Main {
     val kafkaConsumer = new FlinkKafkaConsumer011("machine", new MachineEventDeserializer, kafkaProps)
     kafkaConsumer.assignTimestampsAndWatermarks(new MachineEventWatermarkEmitter)
 
+    val elasticsearchSink = createElasticsearchSink
+
     val source = env
       .addSource(kafkaConsumer)
 
     // Map to machine income
-    val machineIncomeSource = source
+    source
       .filter(machineEvent => Array(MachineEventType.Win, MachineEventType.Bet).contains(machineEvent.`type`))
       .map[MachineIncome]((machineEvent: MachineEvent) => machineEvent.toMachineIncome)
-
-    // Game income pipeline
-    machineIncomeSource
-      .keyBy(_.gameId)
-      .timeWindow(Time.seconds(30))
-      .reduce { (p1, p2) => p1.sum(p2) }
-      .map[InfluxDbPoint]((machineProfit: MachineIncome) => machineProfit.toInfluxDbPoint("game_income"))
-      .addSink(new InfluxDbSink)
-      .name("Game Income")
-
-    // Site income pipelines
-    val siteIncomeSource = machineIncomeSource
-      .keyBy(_.siteId)
-      .timeWindow(Time.seconds(30))
-
-    siteIncomeSource
-      .maxBy("value")
-      .map[InfluxDbPoint]((machineProfit: MachineIncome) => machineProfit.toInfluxDbPoint("site_max_income"))
-      .addSink(new InfluxDbSink)
-      .name("Site Max Income")
-
-    siteIncomeSource
-      .reduce { (p1, p2) => p1.sum(p2) }
-      .map[InfluxDbPoint]((machineProfit: MachineIncome) => machineProfit.toInfluxDbPoint("site_income"))
-      .addSink(new InfluxDbSink)
-      .name("Site Income")
-
-    // Machine income pipeline
-    machineIncomeSource
       .keyBy(_.machineId)
-      .timeWindow(Time.seconds(30))
+      .timeWindow(Time.seconds(10))
       .reduce { (p1, p2) => p1.sum(p2) }
-      .map[InfluxDbPoint]((machineProfit: MachineIncome) => machineProfit.toInfluxDbPoint("machine_income"))
-      .addSink(new InfluxDbSink)
+      .map[ElasticsearchEvent]((machineIncome: MachineIncome) => machineIncome.toElasticsearchEvent())
+      .addSink(elasticsearchSink)
       .name("Machine Income")
 
     // Fraud detection pipeline
@@ -79,11 +54,21 @@ object Main {
       .keyBy(_.machineId)
       .countWindow(2, 1)
       .process(new DepositFraudDetectionFunction(1.second))
-      .print()
+      .map[ElasticsearchEvent]((fraudAlert: MachineFraudAlert) => fraudAlert.toElasticsearchEvent())
+      .addSink(elasticsearchSink)
       .name("Fraud Detection")
 
-    println(env.getExecutionPlan)
+    //println(env.getExecutionPlan)
 
-    //env.execute("Casino Streaming")
+    env.execute("Casino Streaming")
+  }
+
+  def createElasticsearchSink: ElasticsearchSink[ElasticsearchEvent] = {
+    val httpHosts = new java.util.ArrayList[HttpHost]
+    httpHosts.add(new HttpHost("localhost", 9200, "http"))
+
+    val esSinkBuilder = new ElasticsearchSink.Builder[ElasticsearchEvent](httpHosts, new CustomElasticsearchSinkFunction)
+    esSinkBuilder.setBulkFlushInterval(1000)
+    esSinkBuilder.build()
   }
 }

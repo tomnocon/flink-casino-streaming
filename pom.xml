@@ -20,6 +20,7 @@
         <flink.version>1.6.1</flink.version>
         <kafka.version>0.11</kafka.version>
         <influxdb.vesrion>2.14</influxdb.vesrion>
+        <elasticsearch.connector.vesrion>1.7.0</elasticsearch.connector.vesrion>
         <jackson.vesrion>2.9.7</jackson.vesrion>
         <encoding>UTF-8</encoding>
         <scala-maven-plugin.version>3.3.1</scala-maven-plugin.version>

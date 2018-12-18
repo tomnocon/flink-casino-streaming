@@ -1,6 +1,7 @@
 package com.tomnocon.cs.model
 
-import com.tomnocon.cs.sink.InfluxDbPoint
+import com.tomnocon.cs.sink.{ElasticsearchEvent, InfluxDbPoint}
+import org.joda.time.DateTime
 
 object Helpers {
 
@@ -13,19 +14,23 @@ object Helpers {
             siteId = base.siteId,
             gameId = base.gameId,
             value = -base.value,
-            timestamp = base.timestamp)
+            timestamp = base.timestamp,
+            start = base.timestamp,
+            end = base.timestamp)
         case MachineEventType.Bet =>
           MachineIncome(
             machineId = base.machineId,
             siteId = base.siteId,
             gameId = base.gameId,
             value = base.value,
-            timestamp = base.timestamp)
+            timestamp = base.timestamp,
+            start = base.timestamp,
+            end = base.timestamp)
         case _ => throw new IllegalArgumentException(s"This is not machine income event: $base")
       }
     }
 
-    def toMachineFraudAlert(message: String, timestamp: Long): MachineFraudAlert = {
+    def toMachineFraudAlert(message: String, timestamp: DateTime): MachineFraudAlert = {
       MachineFraudAlert(
         message = message,
         machineId = base.machineId,
@@ -35,22 +40,55 @@ object Helpers {
     }
   }
 
-  implicit class RichMachineProfit(base: MachineIncome) {
+  implicit class RichMachineIncome(base: MachineIncome) {
     def sum(second: MachineIncome): MachineIncome = {
       MachineIncome(
         machineId = base.machineId,
         siteId = base.siteId,
         gameId = base.gameId,
         value = base.value + second.value,
-        timestamp = second.timestamp)
+        timestamp = base.end,
+        start = base.start,
+        end = second.end)
     }
 
     def toInfluxDbPoint(measurement: String): InfluxDbPoint = {
       InfluxDbPoint(
         measurement = measurement,
-        timestamp = base.timestamp,
+        timestamp = base.end,
         tags = Map("gameId" -> base.gameId, "siteId" -> base.siteId, "machineId" -> base.machineId),
         fields = Map("value" -> base.value.asInstanceOf[AnyRef]))
+    }
+
+    def toElasticsearchEvent(index: String = "machine_income"): ElasticsearchEvent = {
+      ElasticsearchEvent(id = f"${base.machineId}:${base.end}", index,
+        data = Map(
+          "value" -> base.value,
+          "gameId" -> base.gameId,
+          "siteId" -> base.siteId,
+          "machineId" -> base.machineId,
+          "timestamp" -> new DateTime(base.end),
+          "start" -> new DateTime(base.start),
+          "end" -> new DateTime(base.end)))
+    }
+  }
+
+  implicit class RichMachineFraudAlert(base: MachineFraudAlert) {
+    def toInfluxDbPoint(measurement: String): InfluxDbPoint = {
+      InfluxDbPoint(
+        measurement = measurement,
+        timestamp = base.timestamp.getMillis,
+        tags = Map("siteId" -> base.siteId, "machineId" -> base.machineId),
+        fields = Map("value" -> Integer.valueOf(1)))
+    }
+
+    def toElasticsearchEvent(index: String = "machine_fraud"): ElasticsearchEvent = {
+      ElasticsearchEvent(id = f"${base.machineId}:${base.timestamp}", index,
+        data = Map(
+          "message" -> base.message,
+          "machineId" -> base.machineId,
+          "siteId" -> base.siteId,
+          "timestamp" -> new DateTime(base.timestamp)))
     }
   }
 

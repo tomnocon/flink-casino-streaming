@@ -39,6 +39,11 @@
             <version>${jackson.vesrion}</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-elasticsearch6_${scala.binary.version}</artifactId>
+            <version>${elasticsearch.connector.vesrion}</version>
+        </dependency>
+        <dependency>
             <groupId>org.influxdb</groupId>
             <artifactId>influxdb-java</artifactId>
             <version>${influxdb.vesrion}</version>

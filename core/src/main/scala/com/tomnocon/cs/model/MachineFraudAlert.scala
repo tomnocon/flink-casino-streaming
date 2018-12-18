@@ -1,6 +1,8 @@
 package com.tomnocon.cs.model
 
-case class MachineFraudAlert(message: String, machineId: String, siteId: String, timestamp: Long){
+import org.joda.time.DateTime
 
-  override def toString: String = s"MachineFraudAlert{message=$message machineId=$machineId, siteId=$siteId, timestamp=$timestamp}"
+case class MachineFraudAlert(message: String, machineId: String, siteId: String, timestamp: DateTime){
+
+  override def toString: String = s"MachineFraudAlert{message=$message, machineId=$machineId, siteId=$siteId, timestamp=$timestamp}"
 }
