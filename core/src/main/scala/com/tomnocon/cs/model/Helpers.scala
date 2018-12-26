@@ -1,6 +1,6 @@
 package com.tomnocon.cs.model
 
-import com.tomnocon.cs.sink.{ElasticsearchEvent, InfluxDbPoint}
+import com.tomnocon.cs.sink.ElasticsearchEvent
 import org.joda.time.DateTime
 
 object Helpers {
@@ -52,14 +52,6 @@ object Helpers {
         end = second.end)
     }
 
-    def toInfluxDbPoint(measurement: String): InfluxDbPoint = {
-      InfluxDbPoint(
-        measurement = measurement,
-        timestamp = base.end,
-        tags = Map("gameId" -> base.gameId, "siteId" -> base.siteId, "machineId" -> base.machineId),
-        fields = Map("value" -> base.value.asInstanceOf[AnyRef]))
-    }
-
     def toElasticsearchEvent(index: String = "machine_income"): ElasticsearchEvent = {
       ElasticsearchEvent(id = f"${base.machineId}:${base.end}", index,
         data = Map(
@@ -74,13 +66,6 @@ object Helpers {
   }
 
   implicit class RichMachineFraudAlert(base: MachineFraudAlert) {
-    def toInfluxDbPoint(measurement: String): InfluxDbPoint = {
-      InfluxDbPoint(
-        measurement = measurement,
-        timestamp = base.timestamp.getMillis,
-        tags = Map("siteId" -> base.siteId, "machineId" -> base.machineId),
-        fields = Map("value" -> Integer.valueOf(1)))
-    }
 
     def toElasticsearchEvent(index: String = "machine_fraud"): ElasticsearchEvent = {
       ElasticsearchEvent(id = f"${base.machineId}:${base.timestamp}", index,

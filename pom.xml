@@ -10,6 +10,7 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>core</module>
+        <module>simulation</module>
     </modules>
 
     <properties>
@@ -24,6 +25,8 @@
         <jackson.vesrion>2.9.7</jackson.vesrion>
         <encoding>UTF-8</encoding>
         <scala-maven-plugin.version>3.3.1</scala-maven-plugin.version>
+        <maven-shade-plugin.version>3.1.0</maven-shade-plugin.version>
+        <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
     </properties>
 
     <dependencies>
@@ -41,6 +44,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>

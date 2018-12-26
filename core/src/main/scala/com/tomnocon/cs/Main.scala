@@ -58,8 +58,6 @@ object Main {
       .addSink(elasticsearchSink)
       .name("Fraud Detection")
 
-    //println(env.getExecutionPlan)
-
     env.execute("Casino Streaming")
   }
 
