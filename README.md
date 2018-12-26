@@ -1,6 +1,6 @@
 # Apache Flink - Casino Streaming
 
-This project is an exemplary Apache Flink application, witch presents stream processing in casino.
+This project is an exemplary Apache Flink application, which presents stream processing in casino.
 
 ## Prerequisites
 
